@@ -3,9 +3,9 @@ module github.com/snarky-puppy/protoc-gen-go-grpc-fixture
 go 1.20
 
 require (
-	github.com/golang/mock v1.6.0
+	golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135
 	google.golang.org/grpc v1.41.0
-	google.golang.org/protobuf v1.27.1
+	google.golang.org/protobuf v1.30.0
 )
 
 require (

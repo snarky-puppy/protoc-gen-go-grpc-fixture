@@ -13,8 +13,16 @@ import (
 	. "google.golang.org/protobuf/types/known/emptypb"
 )
 
+var _ = Empty{}
+
 type FixturePetStoreClient struct {
 	baseDir string
+}
+
+func NewFixturePetStoreClient(baseDir string) *FixturePetStoreClient {
+	return &FixturePetStoreClient{
+		baseDir: baseDir,
+	}
 }
 
 func (m *FixturePetStoreClient) GetAll(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Pets, error) {

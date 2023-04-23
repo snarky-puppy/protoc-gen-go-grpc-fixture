@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"html/template"
 
+	toolsimports "golang.org/x/tools/imports"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
 )
@@ -24,10 +25,17 @@ import (
 	. "google.golang.org/protobuf/types/known/emptypb"
 )
 
+var _ = Empty{}
 
 {{range .Services}}
 type Fixture{{ .GoName }}Client struct {
 	baseDir string
+}
+
+func NewFixture{{ .GoName }}Client(baseDir string) *Fixture{{ .GoName }}Client {
+	return &Fixture{{ .GoName }}Client{
+		baseDir: baseDir,
+	}
 }
 
 {{range .Methods}}
@@ -79,14 +87,21 @@ func main() {
 	protogen.Options{}.Run(func(plugin *protogen.Plugin) error {
 		plugin.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 		for _, file := range plugin.FilesByPath {
-			if !file.Generate {
+			if !file.Generate || len(file.Services) == 0 {
 				continue
 			}
 
+			destination := file.GeneratedFilenamePrefix + "_grpc_fixture.pb.go"
 			buf := generateSource(file)
 
+			var err error
+			buf, err = toolsimports.Process(destination, buf, nil)
+			if err != nil {
+				panic(err)
+			}
+
 			if _, err := plugin.NewGeneratedFile(
-				file.GeneratedFilenamePrefix+"_grpc_fixture.pb.go",
+				destination,
 				file.GoImportPath,
 			).Write(buf); err != nil {
 				return err

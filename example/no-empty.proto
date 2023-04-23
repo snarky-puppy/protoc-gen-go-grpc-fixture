@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+// fix imports
+
+package petstore;
+
+option go_package = "./;petstore";
+
+message NoEmpty {
+  string id = 1;
+}
+
+
+service NoEmptyService {
+  rpc Get(NoEmpty) returns (NoEmpty) {}
+}
