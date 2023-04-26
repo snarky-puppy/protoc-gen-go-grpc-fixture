@@ -8,6 +8,7 @@ import (
 	protoc_gen_go_grpc_fixture "github.com/snarky-puppy/protoc-gen-go-grpc-fixture"
 	some_lib "github.com/snarky-puppy/protoc-gen-go-grpc-fixture/example/some_lib"
 	grpc "google.golang.org/grpc"
+	path "path"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,5 +27,5 @@ func NewSomeServiceFixtures(baseDir string) SomeServiceClient {
 
 func (c *someServiceFixtures) SomeMethod(ctx context.Context, in *some_lib.SomeMessage, opts ...grpc.CallOption) (*some_lib.SomeMessage, error) {
 	out := new(some_lib.SomeMessage)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, SomeService_SomeMethod_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, SomeService_SomeMethod_FullMethodName+".json"), out)
 }

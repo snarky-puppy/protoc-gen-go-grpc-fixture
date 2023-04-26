@@ -8,6 +8,7 @@ import (
 	protoc_gen_go_grpc_fixture "github.com/snarky-puppy/protoc-gen-go-grpc-fixture"
 	grpc "google.golang.org/grpc"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	path "path"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,25 +27,25 @@ func NewPetStoreFixtures(baseDir string) PetStoreClient {
 
 func (c *petStoreFixtures) GetAll(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Pets, error) {
 	out := new(Pets)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, PetStore_GetAll_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, PetStore_GetAll_FullMethodName+".json"), out)
 }
 
 func (c *petStoreFixtures) GetPet(ctx context.Context, in *Pet, opts ...grpc.CallOption) (*Pet, error) {
 	out := new(Pet)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, PetStore_GetPet_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, PetStore_GetPet_FullMethodName+".json"), out)
 }
 
 func (c *petStoreFixtures) CreatePet(ctx context.Context, in *Pet, opts ...grpc.CallOption) (*Pet, error) {
 	out := new(Pet)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, PetStore_CreatePet_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, PetStore_CreatePet_FullMethodName+".json"), out)
 }
 
 func (c *petStoreFixtures) UpdatePet(ctx context.Context, in *Pet, opts ...grpc.CallOption) (*Pet, error) {
 	out := new(Pet)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, PetStore_UpdatePet_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, PetStore_UpdatePet_FullMethodName+".json"), out)
 }
 
 func (c *petStoreFixtures) DeletePet(ctx context.Context, in *Pet, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, PetStore_DeletePet_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, PetStore_DeletePet_FullMethodName+".json"), out)
 }

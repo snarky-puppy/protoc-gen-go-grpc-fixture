@@ -75,7 +75,7 @@ func replace(v interface{}, visited map[uintptr]bool) error {
 			if str, err := randomWord(); err == nil {
 				value.SetString(str)
 			} else {
-				return fmt.Errorf("%s: %w", valueType.Name, err)
+				return fmt.Errorf("%s: %w", valueType.Name(), err)
 			}
 		}
 	case reflect.Struct:
@@ -98,7 +98,7 @@ func replace(v interface{}, visited map[uintptr]bool) error {
 	case reflect.Ptr:
 		if !value.IsNil() {
 			if err := replace(value.Interface(), visited); err != nil {
-				return fmt.Errorf("%s: %w", valueType.Name, err)
+				return fmt.Errorf("%s: %w", valueType.Name(), err)
 			}
 		}
 	case reflect.Slice, reflect.Array:

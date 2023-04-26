@@ -15,6 +15,7 @@ const (
 	grpcPackage    = protogen.GoImportPath("google.golang.org/grpc")
 	fixturePackage = protogen.GoImportPath("github.com/snarky-puppy/protoc-gen-go-grpc-fixture")
 	fmtPackage     = protogen.GoImportPath("fmt")
+	pathPackage    = protogen.GoImportPath("path")
 )
 
 const deprecationComment = "// Deprecated: Do not use."
@@ -145,7 +146,7 @@ func genClientMethod(gen *protogen.Plugin, file *protogen.File, g *protogen.Gene
 	g.P("func (c *", unexport(service.GoName), "Fixtures) ", clientSignature(g, method), "{")
 	if !method.Desc.IsStreamingServer() && !method.Desc.IsStreamingClient() {
 		g.P("out := new(", method.Output.GoIdent, ")")
-		g.P("return ", fixturePackage.Ident("Fixture"), "(c.baseDir, ", fmSymbol, `+".json"`, ", out)")
+		g.P("return ", fixturePackage.Ident("Fixture"), "(", pathPackage.Ident("Join"), "(c.baseDir, ", fmSymbol, `+".json")`, ", out)")
 		g.P("}")
 		g.P()
 		return

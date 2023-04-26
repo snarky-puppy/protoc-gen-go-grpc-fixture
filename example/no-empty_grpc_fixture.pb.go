@@ -7,6 +7,7 @@ import (
 	context "context"
 	protoc_gen_go_grpc_fixture "github.com/snarky-puppy/protoc-gen-go-grpc-fixture"
 	grpc "google.golang.org/grpc"
+	path "path"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -25,5 +26,5 @@ func NewNoEmptyServiceFixtures(baseDir string) NoEmptyServiceClient {
 
 func (c *noEmptyServiceFixtures) Get(ctx context.Context, in *NoEmpty, opts ...grpc.CallOption) (*NoEmpty, error) {
 	out := new(NoEmpty)
-	return protoc_gen_go_grpc_fixture.Fixture(c.baseDir, NoEmptyService_Get_FullMethodName+".json", out)
+	return protoc_gen_go_grpc_fixture.Fixture(path.Join(c.baseDir, NoEmptyService_Get_FullMethodName+".json"), out)
 }
