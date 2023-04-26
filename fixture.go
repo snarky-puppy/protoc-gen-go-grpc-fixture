@@ -122,41 +122,40 @@ func replace(v interface{}, visited map[uintptr]bool) error {
 	return nil
 }
 
-func Fixture[T any](baseDir string, name string, rv T) (T, error) {
-	f := path.Join(baseDir, fmt.Sprintf("%s.json", name))
-	dir := path.Dir(f)
+func Fixture[T any](fileName string, rv T) (T, error) {
+	dir := path.Dir(fileName)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			return rv, fmt.Errorf("failed to create %s: %w", dir, err)
 		}
 	}
-	// if file f does not exist, create it with and empty return object.
-	_, err := os.Stat(f)
+	// if file does not exist, create it with and empty return object.
+	_, err := os.Stat(fileName)
 	if os.IsNotExist(err) {
 		visited := make(map[uintptr]bool)
 		if err := replace(rv, visited); err != nil {
-			return rv, fmt.Errorf("failed to create fixture values %s: %w", f, err)
+			return rv, fmt.Errorf("failed to create fixture values %s: %w", fileName, err)
 		}
-		fp, err := os.Create(f)
+		fp, err := os.Create(fileName)
 		if err != nil {
-			return rv, fmt.Errorf("failed to create %s: %w", f, err)
+			return rv, fmt.Errorf("failed to create %s: %w", fileName, err)
 		}
 		defer fp.Close()
 		enc := json.NewEncoder(fp)
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(rv); err != nil {
-			return rv, fmt.Errorf("failed to encode %s: %w", f, err)
+			return rv, fmt.Errorf("failed to encode %s: %w", fileName, err)
 		}
 		return rv, nil
 	}
-	// if file f exists, read it and return its contents.
-	fp, err := os.Open(f)
+	// if file fileName exists, read it and return its contents.
+	fp, err := os.Open(fileName)
 	if err != nil {
-		return rv, fmt.Errorf("failed to open %s: %w", f, err)
+		return rv, fmt.Errorf("failed to open %s: %w", fileName, err)
 	}
 	err = json.NewDecoder(fp).Decode(rv)
 	if err != nil {
-		return rv, fmt.Errorf("failed to decode %s: %w", f, err)
+		return rv, fmt.Errorf("failed to decode %s: %w", fileName, err)
 	}
 	return rv, nil
 }
