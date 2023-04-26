@@ -4,8 +4,6 @@ syntax = "proto3";
 
 package petstore;
 
-option go_package = "./;petstore";
-
 message NoEmpty {
   string id = 1;
 }

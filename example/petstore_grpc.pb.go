@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: petstore.proto
 
-package petstore
+package example
 
 import (
 	context "context"

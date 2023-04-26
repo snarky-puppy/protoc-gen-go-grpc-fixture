@@ -1,4 +1,8 @@
 version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/snarky-puppy/protoc-gen-go-grpc-fixture/example
 
 plugins:
   - name: go

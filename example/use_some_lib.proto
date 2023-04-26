@@ -1,0 +1,9 @@
+syntax ="proto3";
+
+import "some_lib/some_lib.proto";
+
+package Some.Lib;
+
+service SomeService {
+    rpc SomeMethod (SomeMessage) returns (SomeMessage) {}
+}

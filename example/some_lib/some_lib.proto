@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package Some.Lib;
+
+message SomeMessage {
+    string some_field = 1;
+}
