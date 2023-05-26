@@ -9,7 +9,19 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strings"
 )
+
+var wordsFailed = false
+var ArraySize = 5
+var MaxDepth = 5
+var EnableDebug = false
+
+func SetPopulateOptions(arraySize, maxDepth int, enableDebug bool) {
+	ArraySize = arraySize
+	MaxDepth = maxDepth
+	EnableDebug = enableDebug
+}
 
 // open /usr/share/dict/words and pick a word at random.
 // this function first seeks to a random location in the file, then backtracks to the last newline character
@@ -47,79 +59,103 @@ func randomWord() (string, error) {
 	return scanner.Text(), nil
 }
 
-func replace(v interface{}, visited map[uintptr]bool) error {
-	value := reflect.ValueOf(v)
-	valueType := reflect.TypeOf(v)
+func randomInt(min, max int) int {
+	return rand.Intn(max-min+1) + min
+}
 
-	if value.Kind() == reflect.Ptr {
-		value = value.Elem()
+func randomString(n int) string {
+	if !wordsFailed {
+		if word, err := randomWord(); err == nil {
+			return word
+		}
+		wordsFailed = true
+	}
+	// if we cannot read /usr/share/dict/words, generate random string
+	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
+}
+
+func prefix(n int) string {
+	buf := strings.Builder{}
+	for i := 0; i < n; i++ {
+		buf.Write([]byte("  "))
+	}
+	return buf.String()
+}
+
+func debug(depth int, format string, a ...interface{}) {
+	if !EnableDebug {
+		return
+	}
+	line := fmt.Sprintf(format, a...)
+	fmt.Printf("%s%s", prefix(depth), line)
+}
+
+func populate(v interface{}, depth int) {
+	if depth == MaxDepth {
+		debug(depth, "depth limit\n")
+		return
 	}
 
-	ptr := value.UnsafeAddr()
-	if visited[ptr] {
-		return nil
+	val := reflect.ValueOf(v)
+	if val.Kind() != reflect.Ptr {
+		return
 	}
-	visited[ptr] = true
 
-	switch value.Kind() {
+	val = val.Elem()
+	switch val.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		min := -10
-		max := 10
-		value.SetInt(int64(rand.Intn(max-min+1) + min))
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		min := 0
-		max := 20
-		value.SetUint(uint64(rand.Intn(max-min+1) + min))
-	case reflect.String:
-		if value.CanSet() {
-			if str, err := randomWord(); err == nil {
-				value.SetString(str)
-			} else {
-				return fmt.Errorf("%s: %w", valueType.Name(), err)
-			}
-		}
-	case reflect.Struct:
-		for i := 0; i < value.NumField(); i++ {
-			field := value.Field(i)
-			fieldType := value.Type().Field(i)
-			if !fieldType.IsExported() {
-				continue
-			}
-			iface := field.Addr().Interface()
-			if err := replace(iface, visited); err != nil {
-				return fmt.Errorf("%s: %w", fieldType.Name, err)
-			}
-			if fieldType.Anonymous {
-				if err := replace(field.Addr().Interface(), visited); err != nil {
-					return fmt.Errorf("%s: %w", fieldType.Name, err)
-				}
-			}
-		}
-	case reflect.Ptr:
-		if !value.IsNil() {
-			if err := replace(value.Interface(), visited); err != nil {
-				return fmt.Errorf("%s: %w", valueType.Name(), err)
-			}
-		}
-	case reflect.Slice, reflect.Array:
-		if value.Type().Elem().Kind() == reflect.Uint8 {
-			for j := 0; j < value.Len(); j++ {
-				// 'x' as a byte is 0x78
-				value.Index(j).SetUint(0x78)
-			}
-		} else {
-			for j := 0; j < value.Len(); j++ {
-				elem := value.Index(j)
-				if elem.Kind() == reflect.Struct || (elem.Kind() == reflect.Ptr && elem.Elem().Kind() == reflect.Struct) {
-					if err := replace(elem.Addr().Interface(), visited); err != nil {
-						return fmt.Errorf("%s: %w", valueType.Name(), err)
-					}
-				}
-			}
-		}
-	}
+		num := int64(randomInt(-100, 100))
+		val.SetInt(num)
+		debug(depth, "(int) %v\n", num)
 
-	return nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		num := uint64(randomInt(0, 100))
+		val.SetUint(num)
+		debug(depth, "(uint) %v\n", num)
+
+	case reflect.String:
+		str := randomString(10)
+		val.SetString(str)
+		debug(depth, "(string) %v\n", str)
+
+	case reflect.Slice:
+		if val.IsNil() || val.Len() < ArraySize {
+			val.Set(reflect.MakeSlice(val.Type(), ArraySize, ArraySize))
+		}
+		fallthrough
+
+	case reflect.Array:
+		for i := 0; i < val.Len(); i++ {
+			debug(depth, "[%d]: %s\n", i, val.Index(i).Type())
+			populate(val.Index(i).Addr().Interface(), depth+1)
+		}
+
+	case reflect.Struct:
+		for i := 0; i < val.NumField(); i++ {
+			field := val.Field(i)
+			fieldType := val.Type().Field(i)
+			debug(depth, "%s: %s\n", fieldType.Name, field.Type())
+			if field.CanSet() {
+				populate(field.Addr().Interface(), depth+1)
+			}
+		}
+
+	case reflect.Ptr:
+		if val.IsNil() {
+			val.Set(reflect.New(val.Type().Elem()))
+		}
+		populate(val.Interface(), depth)
+	}
+}
+
+// Populate recursively populates a struct with random values.
+func Populate(v interface{}) {
+	populate(v, 0)
 }
 
 func Fixture[T any](fileName string, rv T) (T, error) {
@@ -132,10 +168,7 @@ func Fixture[T any](fileName string, rv T) (T, error) {
 	// if file does not exist, create it with and empty return object.
 	_, err := os.Stat(fileName)
 	if os.IsNotExist(err) {
-		visited := make(map[uintptr]bool)
-		if err := replace(rv, visited); err != nil {
-			return rv, fmt.Errorf("failed to create fixture values %s: %w", fileName, err)
-		}
+		Populate(rv)
 		fp, err := os.Create(fileName)
 		if err != nil {
 			return rv, fmt.Errorf("failed to create %s: %w", fileName, err)

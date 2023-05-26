@@ -2,6 +2,11 @@ syntax = "proto3";
 
 package Some.Lib;
 
+message SomeObject {
+    string some_other_field = 1;
+}
+
 message SomeMessage {
     string some_field = 1;
+    SomeObject some_object = 2;
 }
